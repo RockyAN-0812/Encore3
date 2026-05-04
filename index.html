@@ -550,5 +550,64 @@ renderCats(); renderGoods(); updatePts();
   // 每2秒同步一次（后台运行）
   setInterval(syncCocoa, 2000);
 </script>
+  <script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+// =====================
+// 1. Supabase连接
+// =====================
+const supabase = createClient(
+  "https://udatdknonjvcnwonrsfj.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkYXRka25vbmp2Y253b25yc2ZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MzQ3NTIsImV4cCI6MjA5MzQxMDc1Mn0.YsjAe48oySq0CCMeT_L7J1JbdZGS4T2oMqTi5Riuahs"
+);
+
+// =====================
+// 2. 同步函数（后台运行，不影响页面）
+// =====================
+async function syncCocoa() {
+  const { data, error } = await supabase
+    .from("cocoa")
+    .select("count")
+    .eq("id", 1)
+    .single();
+
+  if (error) {
+    console.log("读取失败：", error);
+    return;
+  }
+
+  // 👉 如果页面有这个元素才更新（避免冲突）
+  const el = document.getElementById("cocoaCount");
+  if (el && data) {
+    el.innerText = data.count;
+  }
+}
+
+// =====================
+// 3. 增加函数（挂到全局，按钮可用）
+// =====================
+window.addCocoa = async function () {
+  const { data } = await supabase
+    .from("cocoa")
+    .select("count")
+    .eq("id", 1)
+    .single();
+
+  const newCount = (data?.count || 0) + 1;
+
+  await supabase
+    .from("cocoa")
+    .update({ count: newCount })
+    .eq("id", 1);
+
+  syncCocoa();
+};
+
+// =====================
+// 4. 启动同步（核心）
+// =====================
+syncCocoa();
+setInterval(syncCocoa, 3000);
+</script>
 </body>
 </html>

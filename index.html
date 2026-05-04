@@ -528,5 +528,27 @@ renderCats(); renderGoods(); updatePts();
   </script>
 </body>
 </html>
+  <script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+  const supabaseUrl = "https://udatdknonjvcnwonrsfj.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkYXRka25vbmp2Y253b25yc2ZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MzQ3NTIsImV4cCI6MjA5MzQxMDc1Mn0.YsjAe48oySq0CCMeT_L7J1JbdZGS4T2oMqTi5Riuahs";
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  // 👉 后台同步逻辑（不会显示任何UI）
+  async function syncCocoa() {
+    let { data } = await supabase
+      .from('cocoa')
+      .select('count')
+      .eq('id', 1)
+      .single();
+
+    console.log("当前可可粉：", data.count);
+  }
+
+  // 每2秒同步一次（后台运行）
+  setInterval(syncCocoa, 2000);
+</script>
 </body>
 </html>

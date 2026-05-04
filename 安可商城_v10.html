@@ -456,5 +456,77 @@ function showToast(msg) {
 
 renderCats(); renderGoods(); updatePts();
 </script>
+  <!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>可可粉同步系统</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+
+<body>
+  <h2>☕ 可可粉云同步系统</h2>
+
+  <div style="font-size:20px;margin:20px 0;">
+    当前数量：<span id="cocoaCount">0</span>
+  </div>
+
+  <button onclick="addCocoa()">➕ +1 可可粉</button>
+
+  <script>
+    // =========================
+    // ① 这里填你的 Supabase 信息
+    // =========================
+    const supabaseUrl = "https://udatdknonjvcnwonrsfj.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkYXRka25vbmp2Y253b25yc2ZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MzQ3NTIsImV4cCI6MjA5MzQxMDc1Mn0.YsjAe48oySq0CCMeT_L7J1JbdZGS4T2oMqTi5Riuahs";
+
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // =========================
+    // ② 加载数据
+    // =========================
+    async function load() {
+      let { data, error } = await supabase
+        .from('cocoa')
+        .select('count')
+        .eq('id', 1)
+        .single();
+
+      if (!error && data) {
+        document.getElementById("cocoaCount").innerText = data.count;
+      }
+    }
+
+    // =========================
+    // ③ +1 并同步云端
+    // =========================
+    async function addCocoa() {
+      let { data } = await supabase
+        .from('cocoa')
+        .select('count')
+        .eq('id', 1)
+        .single();
+
+      let newCount = (data?.count || 0) + 1;
+
+      await supabase
+        .from('cocoa')
+        .update({ count: newCount })
+        .eq('id', 1);
+
+      load();
+    }
+
+    // =========================
+    // ④ 初始化加载
+    // =========================
+    load();
+
+    // 每2秒自动刷新（模拟“实时同步”）
+    setInterval(load, 2000);
+  </script>
+</body>
+</html>
 </body>
 </html>
